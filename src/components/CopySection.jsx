@@ -55,7 +55,7 @@ const CopySection = ({ meta }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  
+  // SSR-safe defaults
   const safeMeta = {
     title: meta.title || "",
     description: meta.description || "",

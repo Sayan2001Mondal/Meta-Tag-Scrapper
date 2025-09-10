@@ -1,342 +1,162 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
-  Box,
   Card,
-  CardMedia,
   CardContent,
+  CardMedia,
   Typography,
-  Stack,
+  Box,
+  Avatar,
+  Chip,
   Tabs,
   Tab,
-  Avatar,
-  Chip
+  Stack,
+  useMediaQuery,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { FaFacebook, FaTwitter, FaDiscord, FaInstagram } from "react-icons/fa";
 
 const SocialPreview = styled(Card)(({ theme }) => ({
-  maxWidth: 500,
-  margin: '0 auto',
+  maxWidth: 600,
+  width: "100%",
+  margin: "16px auto",
+  boxShadow: theme.shadows[3],
   borderRadius: 12,
-  overflow: 'hidden',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-  border: '1px solid rgba(0,0,0,0.1)',
 }));
 
-const FacebookPreview = styled(SocialPreview)(({ theme }) => ({
-  backgroundColor: '#ffffff',
-  '& .facebook-header': {
-    padding: theme.spacing(2),
-    borderBottom: '1px solid #e4e6ea',
-    backgroundColor: '#f0f2f5',
-  },
-  '& .facebook-content': {
-    backgroundColor: '#f2f3f5',
-    borderTop: '1px solid #dadde1',
+function getHostname(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "";
   }
-}));
+}
 
-const TwitterPreview = styled(SocialPreview)(({ theme }) => ({
-  border: '1px solid #e1e8ed',
-  backgroundColor: '#ffffff',
-}));
+export default function Preview({ meta }) {
+  const [tab, setTab] = useState(0);
+  const handleTabChange = (_, newValue) => setTab(newValue);
+  const isMobile = useMediaQuery("(max-width:600px)");
 
-const LinkedInPreview = styled(SocialPreview)(({ theme }) => ({
-  border: '1px solid #e0e0e0',
-  backgroundColor: '#ffffff',
-}));
-
-const Preview = ({ meta }) => {
-  const [tab, setTab] = React.useState(0);
-
-  const handleTabChange = (event, newValue) => {
-    setTab(newValue);
-  };
-
-  const getHostname = (url) => {
-    try {
-      return new URL(url || 'https://example.com').hostname.toLowerCase();
-    } catch {
-      return 'example.com';
-    }
-  };
-
-  const FacebookCard = () => (
-    <FacebookPreview>
-      <Box className="facebook-header">
+  // Reusable Social Card
+  const SocialCard = ({ platform, color, icon, title, description }) => (
+    <SocialPreview>
+      <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0" }}>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Avatar 
-            sx={{ width: 20, height: 20, backgroundColor: '#1877f2', fontSize: '0.75rem' }}>
-            F
+          <Avatar sx={{ width: 24, height: 24, backgroundColor: color }}>
+            {icon}
           </Avatar>
-          <Typography variant="body2" sx={{ fontWeight: 500, color: '#1c1e21' }}>
-            Facebook
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {platform}
           </Typography>
-          <Chip 
-            label="Preview" 
-            size="small" 
-            sx={{ 
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
+          <Chip
+            label="Preview"
+            size="small"
+            sx={{
+              backgroundColor: color + "22",
+              color,
               height: 20,
-              fontSize: '0.7rem'
-            }} 
+              fontSize: "0.7rem",
+            }}
           />
         </Stack>
       </Box>
+
       {meta.image && (
         <CardMedia
           component="img"
-          height="260"
           image={meta.image}
-          alt={meta.title}
-          sx={{ objectFit: "cover" }}
+          alt={`${platform} preview`}
+          sx={{
+            width: "100%",
+            maxHeight: 250,
+            objectFit: "cover",
+          }}
         />
       )}
-      <CardContent className="facebook-content" sx={{ p: 2 }}>
-        <Typography
-          variant="caption"
-          sx={{ 
-            color: "#65676b", 
-            textTransform: "uppercase", 
-            fontSize: "0.75rem",
-            fontWeight: 500,
-            letterSpacing: 0.5
-          }}
-        >
+
+      <CardContent>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          {meta.title || title}
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+          {meta.description || description}
+        </Typography>
+        <Typography variant="caption" sx={{ color: "#555", mt: 1, display: "block" }}>
           {getHostname(meta.url)}
         </Typography>
-        <Typography
-          variant="subtitle1"
-          sx={{ 
-            fontWeight: 600, 
-            color: "#1c1e21", 
-            lineHeight: 1.2, 
-            mt: 0.5,
-            fontSize: '1rem'
-          }}
-        >
-          {meta.title || "World Leader in AI Computing"}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ 
-            color: "#65676b", 
-            mt: 0.5, 
-            lineHeight: 1.3,
-            fontSize: '0.875rem'
-          }}
-        >
-          {meta.description || "We create the world's fastest supercomputer and largest gaming platform"}
-        </Typography>
       </CardContent>
-    </FacebookPreview>
+    </SocialPreview>
   );
 
-  const TwitterCard = () => (
-    <TwitterPreview>
-      <Box sx={{ p: 2, borderBottom: '1px solid #e1e8ed' }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Avatar 
-            sx={{ width: 20, height: 20, backgroundColor: '#1da1f2', fontSize: '0.75rem' }}>
-            T
-          </Avatar>
-          <Typography variant="body2" sx={{ fontWeight: 500, color: '#0f1419' }}>
-            X (Formerly Twitter)
-          </Typography>
-          <Chip 
-            label="Preview" 
-            size="small" 
-            sx={{ 
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
-              height: 20,
-              fontSize: '0.7rem'
-            }} 
-          />
-        </Stack>
-      </Box>
-      {meta.image && (
-        <CardMedia
-          component="img"
-          height="250"
-          image={meta.image}
-          alt={meta.title}
-          sx={{ objectFit: "cover" }}
-        />
-      )}
-      <CardContent sx={{ p: 2 }}>
-        <Typography
-          variant="body2"
-          sx={{ 
-            color: "#536471", 
-            fontSize: "0.875rem", 
-            mb: 1,
-            fontWeight: 400
-          }}
-        >
-          {getHostname(meta.url)}
-        </Typography>
-        <Typography
-          variant="subtitle1"
-          sx={{ 
-            fontWeight: 700, 
-            color: "#0f1419", 
-            lineHeight: 1.2,
-            fontSize: '0.95rem'
-          }}
-        >
-          {meta.title || "World Leader in AI Computing"}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ 
-            color: "#536471", 
-            mt: 0.5, 
-            lineHeight: 1.3,
-            fontSize: '0.875rem'
-          }}
-        >
-          {meta.description || "We create the world's fastest supercomputer and largest gaming platform"}
-        </Typography>
-      </CardContent>
-    </TwitterPreview>
-  );
-
-  const LinkedInCard = () => (
-    <LinkedInPreview>
-      <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Avatar 
-            sx={{ width: 20, height: 20, backgroundColor: '#0077b5', fontSize: '0.75rem' }}>
-            in
-          </Avatar>
-          <Typography variant="body2" sx={{ fontWeight: 500, color: '#000000e6' }}>
-            LinkedIn
-          </Typography>
-          <Chip 
-            label="Preview" 
-            size="small" 
-            sx={{ 
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
-              height: 20,
-              fontSize: '0.7rem'
-            }} 
-          />
-        </Stack>
-      </Box>
-      {meta.image && (
-        <CardMedia
-          component="img"
-          height="200"
-          image={meta.image}
-          alt={meta.title}
-          sx={{ objectFit: "cover" }}
-        />
-      )}
-      <CardContent sx={{ p: 2, backgroundColor: "#fff" }}>
-        <Typography
-          variant="subtitle1"
-          sx={{ 
-            fontWeight: 600, 
-            color: "#000000e6", 
-            lineHeight: 1.2,
-            fontSize: '0.95rem'
-          }}
-        >
-          {meta.title || "World Leader in AI Computing"}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ 
-            color: "#00000099", 
-            mt: 1, 
-            lineHeight: 1.3,
-            fontSize: '0.875rem'
-          }}
-        >
-          {meta.description || "We create the world's fastest supercomputer and largest gaming platform"}
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ 
-            color: "#00000099", 
-            fontSize: "0.75rem", 
-            mt: 1, 
-            display: "block" 
-          }}
-        >
-          {getHostname(meta.url)}
-        </Typography>
-      </CardContent>
-    </LinkedInPreview>
-  );
+  const previews = [
+    {
+      platform: "Facebook",
+      color: "#1877f2",
+      icon: <FaFacebook size={14} color="white" />,
+      title: "Default Facebook Title",
+      description: "Default description for Facebook preview.",
+    },
+    {
+      platform: "X (Twitter)",
+      color: "#1da1f2",
+      icon: <FaTwitter size={14} color="white" />,
+      title: "Default Twitter Title",
+      description: "Default description for Twitter preview.",
+    },
+    {
+      platform: "Discord",
+      color: "#5865f2",
+      icon: <FaDiscord size={14} color="white" />,
+      title: "Default Discord Embed",
+      description: "Default description for Discord preview.",
+    },
+    {
+      platform: "Instagram",
+      color: "#E1306C",
+      icon: <FaInstagram size={14} color="white" />,
+      title: "Default Instagram Title",
+      description: "Default description for Instagram preview.",
+    },
+  ];
 
   return (
-    <Box>
-      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <VisibilityIcon color="primary" />
-        Preview
-      </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
-        See how your website will look on social media platforms. This live preview 
-        ensures your metadata aligns with your content and branding.
-      </Typography>
-      
-      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-        <Tabs 
-          value={tab} 
-          onChange={handleTabChange}
-          sx={{
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontWeight: 500,
-            }
-          }}
-        >
-          <Tab label="Facebook" />
-          <Tab label="X (Formerly Twitter)" />
-          <Tab label="LinkedIn" />
-        </Tabs>
-      </Box>
-      
-      <Box>
-        {tab === 0 && <FacebookCard />}
-        {tab === 1 && <TwitterCard />}
-        {tab === 2 && <LinkedInCard />}
-      </Box>
+    <Box sx={{ width: "100%", mt: 3 }}>
+      {/* Desktop/Tablet → Tabs */}
+      {!isMobile && (
+        <>
+          <Tabs
+            value={tab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontWeight: 500,
+              },
+            }}
+          >
+            {previews.map((p) => (
+              <Tab key={p.platform} label={p.platform} />
+            ))}
+          </Tabs>
 
-      <Box sx={{ mt: 3, p: 2, backgroundColor: '#f8f9fa', borderRadius: 2 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 500 }}>
-          Platform Details:
-        </Typography>
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip 
-            label={`Type: ${meta.type}`} 
-            size="small" 
-            variant="outlined"
-            sx={{ backgroundColor: 'white' }}
-          />
-          <Chip 
-            label={`Twitter Card: ${meta.twitter_card}`} 
-            size="small" 
-            variant="outlined"
-            sx={{ backgroundColor: 'white' }}
-          />
-          {meta.image && (
-            <Chip 
-              label="Has Image" 
-              size="small" 
-              color="success"
-              variant="outlined"
-              sx={{ backgroundColor: 'white' }}
-            />
-          )}
-        </Stack>
-      </Box>
+          <Box sx={{ mt: 2 }}>
+            <SocialCard {...previews[tab]} />
+          </Box>
+        </>
+      )}
+
+      {/* Mobile → Stack all previews */}
+      {isMobile && (
+        <Box>
+          {previews.map((p) => (
+            <SocialCard key={p.platform} {...p} />
+          ))}
+        </Box>
+      )}
     </Box>
   );
-};
-
-export default Preview;
+}
