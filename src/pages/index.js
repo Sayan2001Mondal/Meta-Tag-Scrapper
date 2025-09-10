@@ -34,6 +34,7 @@ const StyledCard = styled(Paper)(({ theme }) => ({
   border: '1px solid rgba(0,0,0,0.08)',
 }));
 
+// Simple URL validation
 function isValidUrl(str) {
   try {
     const u = new URL(str);
@@ -43,6 +44,7 @@ function isValidUrl(str) {
   }
 }
 
+// Main Page Component
 export default function Home() {
   const [url, setUrl] = React.useState("");
   const [error, setError] = React.useState("");

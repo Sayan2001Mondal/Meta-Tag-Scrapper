@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
   Button,
   Alert,
   Paper,
-  Chip
+  Chip,
+  useTheme,
+  useMediaQuery
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import CodeIcon from "@mui/icons-material/Code";
@@ -18,18 +20,21 @@ const CodeBlock = styled(Box)(({ theme }) => ({
   borderRadius: 12,
   fontFamily: 'Monaco, Consolas, "Courier New", monospace',
   fontSize: '0.875rem',
-  overflow: 'auto',
+  overflowX: 'auto',
   maxHeight: 500,
   lineHeight: 1.6,
   '& .line': {
     display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center'
   },
   '& .line-number': {
     color: '#858585',
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
     userSelect: 'none',
     minWidth: '20px',
     textAlign: 'right',
+    flexShrink: 0,
   },
   '& .tag': { color: '#569cd6' },
   '& .attr-name': { color: '#92c5f8' },
@@ -46,59 +51,54 @@ const NotificationBanner = styled(Paper)(({ theme }) => ({
 }));
 
 const CopySection = ({ meta }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  
+  const safeMeta = {
+    title: meta.title || "",
+    description: meta.description || "",
+    image: meta.image || "",
+    url: meta.url || "",
+    type: meta.type || "website",
+    twitter_card: meta.twitter_card || "summary",
+  };
 
   const generateMetaTags = () => {
     const tags = [];
-    
-    // Basic meta tags
-    if (meta.title) {
-      tags.push(`<title>${meta.title}</title>`);
-      tags.push(`<meta name="title" content="${meta.title}" />`);
-    }
-    if (meta.description) {
-      tags.push(`<meta name="description" content="${meta.description}" />`);
-    }
-    
-    // Open Graph tags
-    if (meta.title) tags.push(`<meta property="og:title" content="${meta.title}" />`);
-    if (meta.description) tags.push(`<meta property="og:description" content="${meta.description}" />`);
-    if (meta.image) tags.push(`<meta property="og:image" content="${meta.image}" />`);
-    if (meta.url) tags.push(`<meta property="og:url" content="${meta.url}" />`);
-    tags.push(`<meta property="og:type" content="${meta.type}" />`);
-    
-    // Twitter Card tags
-    tags.push(`<meta name="twitter:card" content="${meta.twitter_card}" />`);
-    if (meta.title) tags.push(`<meta name="twitter:title" content="${meta.title}" />`);
-    if (meta.description) tags.push(`<meta name="twitter:description" content="${meta.description}" />`);
-    if (meta.image) tags.push(`<meta name="twitter:image" content="${meta.image}" />`);
-    
-    return tags;
-  };
 
-  const formatCodeWithLineNumbers = (tags) => {
-    return tags.map((tag, index) => {
-      const lineNumber = index + 1;
-      let formattedTag = tag;
-      
-      // Add syntax highlighting
-      formattedTag = formattedTag
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/(&lt;\/?[^&\s]+)/g, '<span class="tag">$1</span>')
-        .replace(/(name|property|content)=/g, '<span class="attr-name">$1</span>=')
-        .replace(/"([^"]*)"/g, '"<span class="attr-value">$1</span>"');
-      
-      return { lineNumber, content: formattedTag };
-    });
+    if (safeMeta.title) {
+      tags.push({ type: 'title', value: safeMeta.title });
+      tags.push({ type: 'meta', name: 'title', value: safeMeta.title });
+    }
+    if (safeMeta.description) {
+      tags.push({ type: 'meta', name: 'description', value: safeMeta.description });
+    }
+    if (safeMeta.title) tags.push({ type: 'meta', property: 'og:title', value: safeMeta.title });
+    if (safeMeta.description) tags.push({ type: 'meta', property: 'og:description', value: safeMeta.description });
+    if (safeMeta.image) tags.push({ type: 'meta', property: 'og:image', value: safeMeta.image });
+    if (safeMeta.url) tags.push({ type: 'meta', property: 'og:url', value: safeMeta.url });
+    tags.push({ type: 'meta', property: 'og:type', value: safeMeta.type });
+
+    tags.push({ type: 'meta', name: 'twitter:card', value: safeMeta.twitter_card });
+    if (safeMeta.title) tags.push({ type: 'meta', name: 'twitter:title', value: safeMeta.title });
+    if (safeMeta.description) tags.push({ type: 'meta', name: 'twitter:description', value: safeMeta.description });
+    if (safeMeta.image) tags.push({ type: 'meta', name: 'twitter:image', value: safeMeta.image });
+
+    return tags;
   };
 
   const handleCopy = async () => {
     try {
       const tags = generateMetaTags();
-      const metaTagsText = tags.join('\n');
-      await navigator.clipboard.writeText(metaTagsText);
+      const text = tags.map(tag => {
+        if (tag.type === 'title') return `<title>${tag.value}</title>`;
+        if (tag.property) return `<meta property="${tag.property}" content="${tag.value}" />`;
+        return `<meta name="${tag.name}" content="${tag.value}" />`;
+      }).join('\n');
+
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     } catch (err) {
@@ -107,16 +107,39 @@ const CopySection = ({ meta }) => {
   };
 
   const tags = generateMetaTags();
-  const formattedTags = formatCodeWithLineNumbers(tags);
+
+  const renderTag = (tag) => {
+    if (tag.type === 'title') {
+      return (
+        <>
+          &lt;<span className="tag">title</span>&gt;
+          <span>{tag.value}</span>
+          &lt;/<span className="tag">title</span>&gt;
+        </>
+      );
+    } else if (tag.property) {
+      return (
+        <>
+          &lt;<span className="tag">meta</span> <span className="attr-name">property</span>="<span className="attr-value">{tag.property}</span>" <span className="attr-name">content</span>="<span className="attr-value">{tag.value}</span>" /&gt;
+        </>
+      );
+    } else {
+      return (
+        <>
+          &lt;<span className="tag">meta</span> <span className="attr-name">name</span>="<span className="attr-value">{tag.name}</span>" <span className="attr-name">content</span>="<span className="attr-value">{tag.value}</span>" /&gt;
+        </>
+      );
+    }
+  };
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <CodeIcon color="primary" />
         Copy
       </Typography>
       <Typography variant="body2" color="text.secondary" paragraph>
-        Copy the HTML meta tags for your site. Insert these tags in your site's head 
+        Copy the HTML meta tags for your site. Insert these tags in your site's head
         section for improved social sharing and SEO.
       </Typography>
 
@@ -124,93 +147,67 @@ const CopySection = ({ meta }) => {
         <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
           NEW: A/B Test Your Open Graph Tags
         </Typography>
-        <Typography variant="body2" sx={{ fontSize: '0.875rem', opacity: 0.9 }}>
-          Boost your social CTR by 179% without changing your website! Learn 
-          how to test different preview images and text to maximize clicks 
+        <Typography variant="body2" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem', opacity: 0.9 }}>
+          Boost your social CTR by 179% without changing your website! Learn
+          how to test different preview images and text to maximize clicks
           across all platforms.
         </Typography>
       </NotificationBanner>
 
       <Box sx={{ position: 'relative' }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          mb: 1 
-        }}>
-          <Chip 
-            label="HTML Meta Tags" 
-            size="small" 
-            sx={{ 
+        <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Chip
+            label="HTML Meta Tags"
+            size="small"
+            sx={{
               backgroundColor: '#f5f5f5',
-              color: '#666'
-            }} 
+              color: '#666',
+              mb: isMobile ? 1 : 0
+            }}
           />
           <Button
             size="small"
             startIcon={<ContentCopyIcon />}
             onClick={handleCopy}
             variant={copied ? "contained" : "outlined"}
-            sx={{ 
+            sx={{
               borderRadius: 2,
               textTransform: 'none',
-              minWidth: 120
+              minWidth: 120,
+              alignSelf: isMobile ? 'flex-start' : 'auto'
             }}
             color={copied ? "success" : "primary"}
           >
             {copied ? "Copied!" : "Copy To Clipboard"}
           </Button>
         </Box>
-        
+
         <CodeBlock>
           <div className="line">
             <span className="line-number">1</span>
             <span className="comment">&lt;!-- HTML Meta Tags --&gt;</span>
           </div>
-          {formattedTags.slice(0, 2).map((line) => (
-            <div key={line.lineNumber} className="line">
-              <span className="line-number">{line.lineNumber + 1}</span>
-              <span dangerouslySetInnerHTML={{ __html: line.content }} />
+          {tags.map((tag, idx) => (
+            <div key={idx} className="line">
+              <span className="line-number">{idx + 2}</span>
+              {renderTag(tag)}
             </div>
           ))}
-          
           <div className="line">
-            <span className="line-number">{formattedTags.length + 2}</span>
-            <span className="comment">&lt;!-- Facebook Meta Tags --&gt;</span>
-          </div>
-          {formattedTags.slice(2, 7).map((line, index) => (
-            <div key={line.lineNumber} className="line">
-              <span className="line-number">{index + formattedTags.length + 3}</span>
-              <span dangerouslySetInnerHTML={{ __html: line.content }} />
-            </div>
-          ))}
-          
-          <div className="line">
-            <span className="line-number">{formattedTags.length + 8}</span>
-            <span className="comment">&lt;!-- Twitter Meta Tags --&gt;</span>
-          </div>
-          {formattedTags.slice(7).map((line, index) => (
-            <div key={line.lineNumber} className="line">
-              <span className="line-number">{index + formattedTags.length + 9}</span>
-              <span dangerouslySetInnerHTML={{ __html: line.content }} />
-            </div>
-          ))}
-          
-          <div className="line">
-            <span className="line-number">{formattedTags.length + 13}</span>
+            <span className="line-number">{tags.length + 2}</span>
             <span className="comment">&lt;!-- Meta Tags Generated via https://www.opengraph.xyz --&gt;</span>
           </div>
         </CodeBlock>
       </Box>
 
       {copied && (
-        <Alert 
-          severity="success" 
-          sx={{ 
-            mt: 2, 
+        <Alert
+          severity="success"
+          sx={{
+            mt: 2,
             borderRadius: 2,
             '& .MuiAlert-message': {
-              fontSize: '0.875rem'
+              fontSize: isMobile ? '0.75rem' : '0.875rem'
             }
           }}
         >

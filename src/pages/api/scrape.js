@@ -1,4 +1,4 @@
-// Try different import methods for Cheerio compatibility
+
 let cheerio;
 try {
   cheerio = require('cheerio');
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Make the HTTP request with comprehensive headers
+  
     const response = await axios.get(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; MetaScraper/1.0; +https://example.com/bot)",
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
       timeout: 15000, // 15 second timeout
       maxRedirects: 5,
       validateStatus: function (status) {
-        return status >= 200 && status < 400; // Accept 2xx and 3xx status codes
+        return status >= 200 && status < 400; 
       }
     });
 
@@ -120,7 +120,7 @@ export default async function handler(req, res) {
       twitter_card: meta["twitter:card"] || "summary_large_image",
     };
 
-    // Clean up the image URL if it's relative
+    
     if (result.image && !result.image.startsWith('http')) {
       try {
         const urlObj = new URL(url);

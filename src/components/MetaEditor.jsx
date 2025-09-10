@@ -29,12 +29,11 @@ const MetaEditor = ({ meta, onChange }) => {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Create a URL for the uploaded image
+      
       const imageUrl = URL.createObjectURL(file);
       onChange({ image: imageUrl });
       
-      // You could also handle the file upload to your server here
-      // uploadImageToServer(file).then(url => onChange({ image: url }));
+     
     }
   };
 
@@ -153,7 +152,7 @@ const MetaEditor = ({ meta, onChange }) => {
             Recommended: 1200x630px
           </Typography>
           
-          {/* Hidden file input */}
+          
           <input
             type="file"
             ref={fileInputRef}
