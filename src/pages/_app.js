@@ -2,6 +2,7 @@ import * as React from "react";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
+import Footer from "./layout/footer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,7 @@ export default function MyApp({ Component, pageProps }) {
           <Component {...pageProps} />
         </ThemeProvider>
       </QueryClientProvider>
+      <Footer/>
     </>
   );
 }
