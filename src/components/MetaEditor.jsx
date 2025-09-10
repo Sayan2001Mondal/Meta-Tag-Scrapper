@@ -162,7 +162,7 @@ const MetaEditor = ({ meta, onChange }) => {
           />
         </Box>
         
-        <TextField
+        {/* <TextField
           label="URL"
           value={meta.url}
           onChange={handleChange("url")}
@@ -173,9 +173,9 @@ const MetaEditor = ({ meta, onChange }) => {
               borderRadius: 2,
             }
           }}
-        />
+        /> */}
         
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+        {/* <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <FormControl fullWidth>
             <InputLabel>Content Type</InputLabel>
             <Select
@@ -206,7 +206,7 @@ const MetaEditor = ({ meta, onChange }) => {
               <MenuItem value="player">Player</MenuItem>
             </Select>
           </FormControl>
-        </Stack>
+        </Stack> */}
       </Stack>
     </Box>
   );
