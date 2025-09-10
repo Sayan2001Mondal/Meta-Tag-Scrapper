@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       });
     }
 
-  
+    // Fetch the page HTML with axios
     const response = await axios.get(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; MetaScraper/1.0; +https://example.com/bot)",
